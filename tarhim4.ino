@@ -15,8 +15,8 @@ const char* ssid     = "Kantor Pusat✋😎🤚";
 const char* password = "kantorpusat1973";
 
 // --- KONFIGURASI PIN ---
-LiquidCrystal_I2C lcd(0x27, 16, 2); 
-SoftwareSerial mySoftwareSerial(D1, D2); 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+SoftwareSerial mySoftwareSerial(D1, D2);
 DFRobotDFPlayerMini myDFPlayer;
 
 WiFiUDP ntpUDP;
@@ -25,10 +25,10 @@ ESP8266WebServer server(80);
 
 // --- VARIABEL SISTEM TARHIM ---
 String idKota = "1501";
-String vImsak="--:--", vSubuh="--:--", vTerbit="--:--", vDzuhur="--:--", vAshar="--:--", vMaghrib="--:--", vIsya="--:--";
+String vImsak = "--:--", vSubuh = "--:--", vTerbit = "--:--", vDzuhur = "--:--", vAshar = "--:--", vMaghrib = "--:--", vIsya = "--:--";
 int totalFiles = 0;
 int volumeAlat = 15;
-int lcdMode = 0; 
+int lcdMode = 0;
 
 int pinRelay = D8;       // Relay Ampli (Tarhim)
 int pinRelayBel = D7;    // Relay Bel Elektrik
@@ -40,7 +40,7 @@ bool isPlaying = false, isPaused = false;
 unsigned long lastTriggerTime = 0;
 unsigned long playStartTime = 0;
 
-bool aktifTarhim[7] = {true, true, false, false, false, true, false}; 
+bool aktifTarhim[7] = {true, true, false, false, false, true, false};
 int fileSesi[7] = {3, 1, 1, 1, 1, 1, 1};
 int durasiFiles[31];
 
@@ -64,44 +64,49 @@ unsigned long lastBelPing = 0; // Untuk proteksi Failsafe
 void saveConfig() {
   File f = LittleFS.open("/config.json", "w");
   if (!f) return;
-  DynamicJsonDocument doc(4096); 
+  DynamicJsonDocument doc(4096);
   doc["kota"] = idKota; doc["vol"] = volumeAlat;
-  
+
   JsonArray actArr = doc.createNestedArray("aktif");
-  for(int i=0; i<7; i++) actArr.add(aktifTarhim[i]);
+  for (int i = 0; i < 7; i++) actArr.add(aktifTarhim[i]);
   JsonArray fArr = doc.createNestedArray("filesesi");
-  for(int i=0; i<7; i++) fArr.add(fileSesi[i]);
+  for (int i = 0; i < 7; i++) fArr.add(fileSesi[i]);
   JsonArray durArray = doc.createNestedArray("durasi");
-  for(int i=1; i<=30; i++) durArray.add(durasiFiles[i]);
-  
+  for (int i = 1; i <= 30; i++) durArray.add(durasiFiles[i]);
+
   JsonArray baArr = doc.createNestedArray("bA");
   JsonArray bwArr = doc.createNestedArray("bW");
   JsonArray bkArr = doc.createNestedArray("bK");
   JsonArray bdArr = doc.createNestedArray("bD");
-  for(int i=0; i<15; i++) {
+  for (int i = 0; i < 15; i++) {
     baArr.add(bAktif[i]); bwArr.add(bWaktu[i]); bkArr.add(bKali[i]); bdArr.add(bDurasi[i]);
   }
-  
+
   serializeJson(doc, f);
   f.close();
 }
 
 void loadConfig() {
-  for(int i=0; i<15; i++) { bWaktu[i]="--:--"; bKali[i]=1; bDurasi[i]=3; bAktif[i]=false; }
+  for (int i = 0; i < 15; i++) {
+    bWaktu[i] = "--:--";
+    bKali[i] = 1;
+    bDurasi[i] = 3;
+    bAktif[i] = false;
+  }
   if (!LittleFS.exists("/config.json")) return;
   File f = LittleFS.open("/config.json", "r");
   DynamicJsonDocument doc(4096);
   deserializeJson(doc, f);
-  
+
   idKota = doc["kota"].as<String>();
   volumeAlat = doc["vol"] | 15;
-  for(int i=0; i<7; i++) {
+  for (int i = 0; i < 7; i++) {
     aktifTarhim[i] = doc["aktif"][i] | false;
     fileSesi[i] = doc["filesesi"][i] | 1;
   }
-  for(int i=1; i<=30; i++) durasiFiles[i] = doc["durasi"][i-1] | 0;
-  
-  for(int i=0; i<15; i++) {
+  for (int i = 1; i <= 30; i++) durasiFiles[i] = doc["durasi"][i - 1] | 0;
+
+  for (int i = 0; i < 15; i++) {
     bAktif[i] = doc["bA"][i] | false;
     if (doc["bW"][i]) bWaktu[i] = doc["bW"][i].as<String>();
     bKali[i] = doc["bK"][i] | 1;
@@ -119,7 +124,7 @@ void fetchJadwal() {
     struct tm * ti = localtime (&rawtime);
     char tgl[15];
     sprintf(tgl, "%04d/%02d/%02d", ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday);
-    String url = "https://api.myquran.com/v2/sholat/jadwal/" + idKota + "/" + String(tgl); 
+    String url = "https://api.myquran.com/v2/sholat/jadwal/" + idKota + "/" + String(tgl);
     if (http.begin(client, url)) {
       if (http.GET() > 0) {
         DynamicJsonDocument doc(2048);
@@ -137,8 +142,8 @@ void fetchJadwal() {
 
 String getFileOptions(int selected) {
   String opt = "";
-  for(int i=1; i<=totalFiles; i++) { 
-    opt += "<option value='" + String(i) + "'" + (i==selected?" selected":"") + ">File " + String(i) + "</option>";
+  for (int i = 1; i <= totalFiles; i++) {
+    opt += "<option value='" + String(i) + "'" + (i == selected ? " selected" : "") + ">File " + String(i) + "</option>";
   }
   return opt;
 }
@@ -189,17 +194,17 @@ void handleRoot() {
   s += "@keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }";
   s += ".footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 30px; border-top: 1px solid var(--border); padding-top: 15px; }";
   s += "</style></head><body>";
-  
+
   // Data State tersembunyi
   s += "<div id='s-data' data-play='" + String(isPlaying ? 1 : 0) + "' data-pause='" + String(isPaused ? 1 : 0) + "' data-file='" + String(currentFilePlaying) + "' data-ampli='" + String(manualAmpli ? 1 : 0) + "' style='display:none;'></div>";
 
   s += "<div class='card'>";
   s += "<h2>Auto Tarhim & Bel</h2>";
-  
+
   // --- KONTROL MANUAL REMOTE ---
   s += "<div style='display:flex; gap:10px; margin-bottom:20px; margin-top:15px;'>";
   s += "<button id='btn-ampli' type='button' class='btn' style='flex:1; background: " + String(manualAmpli ? "var(--success)" : "var(--border)") + "; color: #fff;' onclick='toggleAmpli()'>Ampli: " + String(manualAmpli ? "ON" : "OFF") + "</button>";
-  s += "<button id='btn-bel' type='button' class='btn' style='flex:1; background: var(--primary); color: #0f172a;'>🔔 Tahan Bel</button>";
+  s += "<button id='btn-bel' type='button' class='btn' style='flex:1; background: var(--primary); color: #0f172a;'>Tahan Bel</button>";
   s += "</div>";
 
   s += "<form action='/save'>";
@@ -213,14 +218,14 @@ void handleRoot() {
   s += "<button type='button' class='tab-btn active' onclick=\"openTab(event, 'Tarhim')\">Tarhim Set</button>";
   s += "<button type='button' class='tab-btn' onclick=\"openTab(event, 'Bel')\">Bel Set</button>";
   s += "</div>";
-  
+
   // TAB TARHIM
   s += "<div id='Tarhim' class='tab-content active'>";
   s += "<div style='overflow-x:auto;'><table><tr><th>Jadwal</th><th>Jam</th><th>Aktif</th><th>Pilih File</th></tr>";
   String names[] = {"Imsak", "Subuh", "Terbit", "Dzuhur", "Ashar", "Maghrib", "Isya"};
   String vals[] = {vImsak, vSubuh, vTerbit, vDzuhur, vAshar, vMaghrib, vIsya};
-  
-  for(int i = 0; i < 7; i++) {
+
+  for (int i = 0; i < 7; i++) {
     s += "<tr><td><b>" + names[i] + "</b></td><td>" + vals[i] + "</td>";
     s += "<td><label class='switch'><input type='checkbox' name='a" + String(i) + "' " + (aktifTarhim[i] ? "checked" : "") + "><span class='slider'></span></label></td>";
     s += "<td><select name='f" + String(i) + "'>" + getFileOptions(fileSesi[i]) + "</select></td></tr>";
@@ -229,7 +234,7 @@ void handleRoot() {
   s += "<h4>Set Durasi Audio</h4>";
   s += "<p style='font-size:12px; color:var(--text-muted); margin-top:-5px;'>satuan detik</p>";
   s += "<div class='durasi-grid'>";
-  for(int i = 1; i <= totalFiles; i++){
+  for (int i = 1; i <= totalFiles; i++) {
     s += "<div class='durasi-item'><span>Audio " + String(i) + "</span>";
     s += "<input type='number' name='d" + String(i) + "' value='" + String(durasiFiles[i]) + "' placeholder='Detik'>";
     s += "<div id='btn-" + String(i) + "' style='width:100%;'>";
@@ -245,7 +250,7 @@ void handleRoot() {
   // TAB BEL
   s += "<div id='Bel' class='tab-content'>";
   s += "<div style='overflow-x:auto;'><table><tr><th>Aktif</th><th>Jam</th><th class='td-center'>X Bunyi</th><th class='td-center'>Lama (Detik)</th></tr>";
-  for(int i = 0; i < 15; i++) {
+  for (int i = 0; i < 15; i++) {
     s += "<tr>";
     s += "<td><label class='switch'><input type='checkbox' name='bA" + String(i) + "' " + (bAktif[i] ? "checked" : "") + "><span class='slider'></span></label></td>";
     s += "<td><input type='time' name='bW" + String(i) + "' value='" + bWaktu[i] + "'></td>";
@@ -254,7 +259,7 @@ void handleRoot() {
     s += "</tr>";
   }
   s += "</table></div></div>";
-  
+
   s += "<br><button type='submit' class='btn b-primary'>SIMPAN SEMUA PENGATURAN</button></form>";
   s += "<div class='footer'>Developed &#9829; by <b style='color:var(--primary);'>Muhsin-IT &#169;</b><br>Waktu Perangkat: <b id='jam' style='color:var(--primary);'>" + timeClient.getFormattedTime() + "</b></div>";
   s += "</div>";
@@ -271,7 +276,7 @@ void handleRoot() {
   s += "  if(evt) evt.currentTarget.classList.add('active');";
   s += "  localStorage.setItem('activeTab', tabName);";
   s += "}";
-  
+
   s += "document.addEventListener('DOMContentLoaded', () => {";
   s += "  let active = localStorage.getItem('activeTab');";
   s += "  if(active) { let btn = document.querySelector(`.tab-btn[onclick*=\"'${active}'\"]`); if(btn) btn.click(); }";
@@ -304,7 +309,7 @@ void handleRoot() {
   s += "  btnBel.style.background = 'var(--primary)';";
   s += "  btnBel.style.color = '#0f172a';";
   s += "}";
-  
+
   // Event Listeners untuk Touch HP dan Mouse PC
   s += "btnBel.addEventListener('mousedown', startBel);";
   s += "btnBel.addEventListener('mouseup', stopBel);";
@@ -331,7 +336,7 @@ void handleRoot() {
   s += "      let isPlay = sData.dataset.play === '1';";
   s += "      let isPause = sData.dataset.pause === '1';";
   s += "      let curFile = sData.dataset.file;";
-  
+
   // Sinkronisasi status tombol Ampli
   s += "      let isAmpli = sData.dataset.ampli === '1';";
   s += "      ampliOn = isAmpli;";
@@ -355,79 +360,89 @@ void handleRoot() {
   s += "  }).catch(function(err){});";
   s += "}, 3000);";
   s += "</script></body></html>";
-  
+
   server.send(200, "text/html", s);
 }
 
 void playAudio(int f) {
-  if (f <= 0) f = 1; 
+  if (f <= 0) f = 1;
   currentFilePlaying = f;
   digitalWrite(pinRelay, HIGH); // Nyalakan relay untuk auto
-  lcd.setCursor(0,1); lcd.print("Ampli Warming Up");
-  delay(5000); 
+  lcd.setCursor(0, 1); lcd.print("Ampli Warming Up");
+  delay(5000);
   myDFPlayer.volume(volumeAlat);
-  delay(200); 
+  delay(200);
   myDFPlayer.play(f);
   isPlaying = true;
   isPaused = false;
-  playStartTime = millis(); 
+  playStartTime = millis();
 }
 
 void stopAudio() {
   currentFilePlaying = 0;
   myDFPlayer.stop();
   // PERBAIKAN: Jangan matikan ampli jika manual Ampli sedang ON
-  digitalWrite(pinRelay, manualAmpli ? HIGH : LOW); 
+  digitalWrite(pinRelay, manualAmpli ? HIGH : LOW);
   isPlaying = false;
   isPaused = false;
 }
 
 void setup() {
-  pinMode(pinRelay, OUTPUT); digitalWrite(pinRelay, LOW); 
-  pinMode(pinRelayBel, OUTPUT); digitalWrite(pinRelayBel, LOW); 
-  
-  pinMode(pinTombol, INPUT_PULLUP); 
+  pinMode(pinRelay, OUTPUT); digitalWrite(pinRelay, LOW);
+  pinMode(pinRelayBel, OUTPUT); digitalWrite(pinRelayBel, LOW);
+
+  pinMode(pinTombol, INPUT_PULLUP);
   Serial.begin(115200);
   mySoftwareSerial.begin(9600);
   Wire.begin(D6, D5); lcd.init(); lcd.backlight();
-  if(!LittleFS.begin()) { Serial.println("FS Error"); }
-  
+  if (!LittleFS.begin()) {
+    Serial.println("FS Error");
+  }
+
   loadConfig();
   WiFi.begin(ssid, password);
-  
-  lcd.setCursor(0,0); lcd.print("Koneksi WiFi...");
-  while (WiFi.status() != WL_CONNECTED) { delay(500); }
-  
-  lcd.clear(); lcd.setCursor(0,0); lcd.print("Init DFPlayer...");
-  
-  delay(2000); 
+
+  lcd.setCursor(0, 0); lcd.print("Koneksi WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+
+  lcd.clear(); lcd.setCursor(0, 0); lcd.print("Init DFPlayer...");
+
+  delay(2000);
   int retry = 0;
-  while (!myDFPlayer.begin(mySoftwareSerial) && retry < 3) { delay(1000); retry++; }
-  
-  delay(2000); 
+  while (!myDFPlayer.begin(mySoftwareSerial) && retry < 3) {
+    delay(1000);
+    retry++;
+  }
+
+  delay(2000);
   totalFiles = myDFPlayer.readFileCounts();
-  if (totalFiles <= 0) { delay(1500); totalFiles = myDFPlayer.readFileCounts(); }
-  
+  if (totalFiles <= 0) {
+    delay(1500);
+    totalFiles = myDFPlayer.readFileCounts();
+  }
+
   fetchJadwal();
-  
+
   // --- ENDPOINT UNTUK TOMBOL MANUAL ---
   server.on("/ampli", []() {
-    if(server.hasArg("state")) manualAmpli = (server.arg("state") == "1");
+    if (server.hasArg("state")) manualAmpli = (server.arg("state") == "1");
     // Jika manual Ampli ON ATAU audio otomatis sedang Play, relay harus menyala
     digitalWrite(pinRelay, (manualAmpli || isPlaying) ? HIGH : LOW);
     server.send(200, "text/plain", "OK");
   });
 
   server.on("/bel", []() {
-    if(server.hasArg("state")) {
-      if(server.arg("state") == "1") {
+    if (server.hasArg("state")) {
+      if (server.arg("state") == "1") {
         manualBel = true;
         lastBelPing = millis(); // Catat waktu terakhir nerima ping
         digitalWrite(pinRelayBel, HIGH);
       } else {
         manualBel = false;
         // Hanya matikan bel jika bel otomatis sedang tidak berbunyi
-        if(!belRelayState) digitalWrite(pinRelayBel, LOW);
+        if (!belRelayState) digitalWrite(pinRelayBel, LOW);
       }
     }
     server.send(200, "text/plain", "OK");
@@ -436,20 +451,43 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/save", []() {
     idKota = server.arg("kota"); volumeAlat = server.arg("vol").toInt();
-    for(int i=0; i<7; i++) { aktifTarhim[i] = server.hasArg("a"+String(i)); fileSesi[i] = server.arg("f"+String(i)).toInt(); }
-    for(int i=1; i<=totalFiles; i++) { String arg = "d" + String(i); if(server.hasArg(arg)) durasiFiles[i] = server.arg(arg).toInt(); }
-    for(int i=0; i<15; i++) {
-      bAktif[i] = server.hasArg("bA"+String(i)); bWaktu[i] = server.arg("bW"+String(i));
-      bKali[i] = server.arg("bK"+String(i)).toInt(); bDurasi[i] = server.arg("bD"+String(i)).toInt();
+    for (int i = 0; i < 7; i++) {
+      aktifTarhim[i] = server.hasArg("a" + String(i));
+      fileSesi[i] = server.arg("f" + String(i)).toInt();
+    }
+    for (int i = 1; i <= totalFiles; i++) {
+      String arg = "d" + String(i);
+      if (server.hasArg(arg)) durasiFiles[i] = server.arg(arg).toInt();
+    }
+    for (int i = 0; i < 15; i++) {
+      bAktif[i] = server.hasArg("bA" + String(i)); bWaktu[i] = server.arg("bW" + String(i));
+      bKali[i] = server.arg("bK" + String(i)).toInt(); bDurasi[i] = server.arg("bD" + String(i)).toInt();
     }
     saveConfig(); myDFPlayer.volume(volumeAlat);
     server.sendHeader("Location", "/"); server.send(303);
   });
-  
-  server.on("/playtest", []() { playAudio(server.arg("n").toInt()); server.sendHeader("Location", "/"); server.send(303); });
-  server.on("/pause", []() { if(!isPaused){myDFPlayer.pause(); isPaused=true;}else{myDFPlayer.start(); isPaused=false;} server.sendHeader("Location", "/"); server.send(303); });
-  server.on("/stop", []() { stopAudio(); server.sendHeader("Location", "/"); server.send(303); });
-  
+
+  server.on("/playtest", []() {
+    playAudio(server.arg("n").toInt());
+    server.sendHeader("Location", "/");
+    server.send(303);
+  });
+  server.on("/pause", []() {
+    if (!isPaused) {
+      myDFPlayer.pause();
+      isPaused = true;
+    } else {
+      myDFPlayer.start();
+      isPaused = false;
+    } server.sendHeader("Location", "/");
+    server.send(303);
+  });
+  server.on("/stop", []() {
+    stopAudio();
+    server.sendHeader("Location", "/");
+    server.send(303);
+  });
+
   server.begin();
   lcd.clear();
 }
@@ -457,36 +495,36 @@ void setup() {
 void loop() {
   server.handleClient();
   timeClient.update();
-  
-  // PROTEKSI FAILSAFE: Jika tidak nerima ping > 1.5 detik, asumsikan HP putus!
-  if (manualBel && (millis() - lastBelPing > 1500)) {
+
+  // PROTEKSI FAILSAFE: Jika tidak nerima ping > 0.5 detik, asumsikan HP putus!
+  if (manualBel && (millis() - lastBelPing > 800)) {
     manualBel = false;
     // Matikan relay hanya jika sistem bel otomatis tidak sedang mengambil alih
     if (!belRelayState) digitalWrite(pinRelayBel, LOW);
   }
 
-  if (digitalRead(pinTombol) == LOW) { 
-    delay(200); 
-    lcdMode++; 
-    if(lcdMode > 2) lcdMode = 0; 
-    lcd.clear(); 
+  if (digitalRead(pinTombol) == LOW) {
+    delay(200);
+    lcdMode++;
+    if (lcdMode > 2) lcdMode = 0;
+    lcd.clear();
   }
-  
+
   int h = timeClient.getHours();
-  int m = timeClient.getMinutes(); 
+  int m = timeClient.getMinutes();
   int s = timeClient.getSeconds();
   long skrgDetik = (long)h * 3600 + (long)m * 60 + s;
   String jamSkrgStr = timeClient.getFormattedTime();
 
   if (h == 21 && m == 0 && s == 0) fetchJadwal();
-  
+
   // LOGIKA TARHIM OTOMATIS
   if (!isPlaying && millis() - lastTriggerTime > 60000) {
     String times[] = {vImsak, vSubuh, vTerbit, vDzuhur, vAshar, vMaghrib, vIsya};
-    for(int i=0; i<7; i++) {
-      if(aktifTarhim[i] && times[i] != "--:--" && times[i] != "null") {
-        int th = times[i].substring(0,2).toInt();
-        int tm = times[i].substring(3,5).toInt();
+    for (int i = 0; i < 7; i++) {
+      if (aktifTarhim[i] && times[i] != "--:--" && times[i] != "null") {
+        int th = times[i].substring(0, 2).toInt();
+        int tm = times[i].substring(3, 5).toInt();
         long offsetDetik = (i == 0) ? 0 : (durasiFiles[fileSesi[i]] + 5);
         long targetDetik = (long)th * 3600 + (long)tm * 60 - offsetDetik;
         if (skrgDetik >= targetDetik && skrgDetik <= targetDetik + 5) {
@@ -502,28 +540,28 @@ void loop() {
   if (myDFPlayer.available()) {
     uint8_t type = myDFPlayer.readType();
     if (type == DFPlayerPlayFinished && isPlaying) {
-      digitalWrite(pinRelay, manualAmpli ? HIGH : LOW); 
+      digitalWrite(pinRelay, manualAmpli ? HIGH : LOW);
       isPlaying = false;
-      currentFilePlaying = 0; 
+      currentFilePlaying = 0;
     }
   }
 
   // LOGIKA BEL ELEKTRIK OTOMATIS
   static int lastBelMinute = -1;
   if (!isBelRinging && m != lastBelMinute) {
-    String hm = jamSkrgStr.substring(0,5); 
-    for(int i=0; i<15; i++) {
-      if(bAktif[i] && bWaktu[i] == hm && bWaktu[i] != "--:--") {
+    String hm = jamSkrgStr.substring(0, 5);
+    for (int i = 0; i < 15; i++) {
+      if (bAktif[i] && bWaktu[i] == hm && bWaktu[i] != "--:--") {
         isBelRinging = true;
         belRingsLeft = bKali[i];
         currentBelDuration = bDurasi[i] * 1000;
         belRelayState = true;
-        digitalWrite(pinRelayBel, HIGH); 
+        digitalWrite(pinRelayBel, HIGH);
         lastBelToggleTime = millis();
-        break; 
+        break;
       }
     }
-    lastBelMinute = m; 
+    lastBelMinute = m;
   }
 
   if (isBelRinging) {
@@ -533,16 +571,16 @@ void loop() {
         lastBelToggleTime = millis();
         belRingsLeft--;
         // Saat jeda, matikan relay (Kecuali tombol HP sedang ditekan paksa)
-        if (!manualBel) digitalWrite(pinRelayBel, LOW); 
+        if (!manualBel) digitalWrite(pinRelayBel, LOW);
       }
     } else {
       if (millis() - lastBelToggleTime >= 2000) {
         if (belRingsLeft > 0) {
           belRelayState = true;
           lastBelToggleTime = millis();
-          digitalWrite(pinRelayBel, HIGH); 
+          digitalWrite(pinRelayBel, HIGH);
         } else {
-          isBelRinging = false; 
+          isBelRinging = false;
         }
       }
     }
@@ -552,20 +590,20 @@ void loop() {
   // TAMPILAN LCD DENGAN 3 MODE
   // ============================================
   if (lcdMode == 2) {
-    lcd.setCursor(0,0);
+    lcd.setCursor(0, 0);
     lcd.print("Akses Browser:  ");
-    lcd.setCursor(0,1); lcd.print(WiFi.localIP().toString() + "    ");
-    
+    lcd.setCursor(0, 1); lcd.print(WiFi.localIP().toString() + "    ");
+
   } else if (lcdMode == 1) {
     long minDiffBel = 999999;
     String nextBelTime = "--:--";
-    
-    for(int i=0; i<15; i++) {
-      if(!bAktif[i] || bWaktu[i] == "--:--") continue;
-      int th = bWaktu[i].substring(0,2).toInt();
-      int tm = bWaktu[i].substring(3,5).toInt();
+
+    for (int i = 0; i < 15; i++) {
+      if (!bAktif[i] || bWaktu[i] == "--:--") continue;
+      int th = bWaktu[i].substring(0, 2).toInt();
+      int tm = bWaktu[i].substring(3, 5).toInt();
       long belDetik = (long)th * 3600 + (long)tm * 60;
-      
+
       if (belDetik > skrgDetik) {
         long diff = belDetik - skrgDetik;
         if (diff < minDiffBel) {
@@ -574,12 +612,12 @@ void loop() {
         }
       }
     }
-    
+
     if (nextBelTime == "--:--") {
-      for(int i=0; i<15; i++) {
-        if(bAktif[i] && bWaktu[i] != "--:--") {
-          int th = bWaktu[i].substring(0,2).toInt();
-          int tm = bWaktu[i].substring(3,5).toInt();
+      for (int i = 0; i < 15; i++) {
+        if (bAktif[i] && bWaktu[i] != "--:--") {
+          int th = bWaktu[i].substring(0, 2).toInt();
+          int tm = bWaktu[i].substring(3, 5).toInt();
           long belDetikBesok = (long)th * 3600 + (long)tm * 60 + 86400;
           long diff = belDetikBesok - skrgDetik;
           if (diff < minDiffBel) {
@@ -590,17 +628,17 @@ void loop() {
       }
     }
 
-    lcd.setCursor(0,0);
-    lcd.print(jamSkrgStr.substring(0,5));
+    lcd.setCursor(0, 0);
+    lcd.print(jamSkrgStr);
     lcd.print(" | Bel   ");
 
-    lcd.setCursor(0,1);
+    lcd.setCursor(0, 1);
     if (isBelRinging || manualBel) { // LCD akan bilang bunyi saat ditekan manual
       lcd.print(" BEL BERBUNYI.. ");
     } else {
       if (nextBelTime != "--:--") {
-        char buf[25]; 
-        sprintf(buf, "%02ld:%02ld:%02ld| %s ", minDiffBel/3600, (minDiffBel%3600)/60, minDiffBel%60, nextBelTime.c_str());
+        char buf[25];
+        sprintf(buf, "%02ld:%02ld:%02ld | %s ", minDiffBel / 3600, (minDiffBel % 3600) / 60, minDiffBel % 60, nextBelTime.c_str());
         lcd.print(buf);
       } else {
         lcd.print("Semua Bel Off   ");
@@ -610,54 +648,54 @@ void loop() {
   } else {
     String times[] = {vImsak, vSubuh, vTerbit, vDzuhur, vAshar, vMaghrib, vIsya};
     String lbl[] = {"Imsak", "Subuh", "Terbit", "Dzuhur", "Ashar", "Maghrb", "Isya"};
-    long minDiffAdzan = 999999; 
+    long minDiffAdzan = 999999;
     long targetCountdown = 0;
     String nextTime = "--:--";
     String nextLbl = "Jadwal";
 
-    for(int i=0; i<7; i++) {
-      if(times[i] == "--:--" || times[i] == "null" || !aktifTarhim[i]) continue;
-      int th = times[i].substring(0,2).toInt();
-      int tm = times[i].substring(3,5).toInt();
+    for (int i = 0; i < 7; i++) {
+      if (times[i] == "--:--" || times[i] == "null" || !aktifTarhim[i]) continue;
+      int th = times[i].substring(0, 2).toInt();
+      int tm = times[i].substring(3, 5).toInt();
       long adzanDetik = (long)th * 3600 + (long)tm * 60;
-      
+
       if (adzanDetik <= skrgDetik) continue;
 
       long diffToAdzan = adzanDetik - skrgDetik;
       if (diffToAdzan < minDiffAdzan) {
-         minDiffAdzan = diffToAdzan;
-         nextTime = times[i]; 
-         nextLbl = lbl[i];
-         long offsetDetik = (i == 0) ? 0 : (durasiFiles[fileSesi[i]] + 5);
-         long startDetik = adzanDetik - offsetDetik;
-         targetCountdown = startDetik - skrgDetik;
-         if (targetCountdown < 0) targetCountdown = 0; 
+        minDiffAdzan = diffToAdzan;
+        nextTime = times[i];
+        nextLbl = lbl[i];
+        long offsetDetik = (i == 0) ? 0 : (durasiFiles[fileSesi[i]] + 5);
+        long startDetik = adzanDetik - offsetDetik;
+        targetCountdown = startDetik - skrgDetik;
+        if (targetCountdown < 0) targetCountdown = 0;
       }
     }
-    
+
     if (nextTime == "--:--") {
-      for(int i=0; i<7; i++) {
-        if(times[i] != "--:--" && times[i] != "null" && aktifTarhim[i]) {
-          int th = times[i].substring(0,2).toInt();
-          int tm = times[i].substring(3,5).toInt();
+      for (int i = 0; i < 7; i++) {
+        if (times[i] != "--:--" && times[i] != "null" && aktifTarhim[i]) {
+          int th = times[i].substring(0, 2).toInt();
+          int tm = times[i].substring(3, 5).toInt();
           long adzanDetik = (long)th * 3600 + (long)tm * 60;
           long offsetDetik = (i == 0) ? 0 : (durasiFiles[fileSesi[i]] + 5);
-          long startDetikBesok = adzanDetik + 86400 - offsetDetik; 
+          long startDetikBesok = adzanDetik + 86400 - offsetDetik;
           targetCountdown = startDetikBesok - skrgDetik;
           nextTime = times[i];
           nextLbl = lbl[i];
-          break; 
+          break;
         }
       }
     }
 
-    lcd.setCursor(0,0);
-    lcd.print(jamSkrgStr.substring(0,5)); // Hapus detik (Opsi ke-2 yang lebih rapi)
+    lcd.setCursor(0, 0);
+    lcd.print(jamSkrgStr); // Hapus detik (Opsi ke-2 yang lebih rapi)
     lcd.print(" | ");
     lcd.print(nextLbl);
-    for(int i=0; i<(7 - nextLbl.length()); i++) lcd.print(" "); 
+    for (int i = 0; i < (7 - nextLbl.length()); i++) lcd.print(" ");
 
-    lcd.setCursor(0,1);
+    lcd.setCursor(0, 1);
     // Info layar utama juga menginformasikan jika bel/ampli sedang hidup
     if (isBelRinging || manualBel) {
       lcd.print(" BEL BERBUNYI.. ");
@@ -665,8 +703,8 @@ void loop() {
       lcd.print("   PLAYING...   ");
     } else {
       if (nextTime != "--:--") {
-        char buf[25]; 
-        sprintf(buf, "%02ld:%02ld:%02ld| %s ", targetCountdown/3600, (targetCountdown%3600)/60, targetCountdown%60, nextTime.c_str());
+        char buf[25];
+        sprintf(buf, "%02ld:%02ld:%02ld | %s ", targetCountdown / 3600, (targetCountdown % 3600) / 60, targetCountdown % 60, nextTime.c_str());
         lcd.print(buf);
       } else {
         lcd.print("Semua Tarhim Off");
