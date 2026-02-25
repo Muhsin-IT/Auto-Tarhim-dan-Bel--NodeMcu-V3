@@ -7,11 +7,11 @@ Semua pengaturan disimpan di dalam memori internal ESP8266 menggunakan sistem *L
 
 ## ✨ Fitur Utama
 
--**📡 Sinkronisasi Waktu & Jadwal Otomatis**: Mendapatkan waktu via NTP Server dan jadwal salat harian dari API MyQuran.
--**📻 Auto Tarhim**: Mengaktifkan relay amplifier dan memutar audio dari SD Card secara otomatis sebelum adzan.Pilihan file MP3 dan durasi hitung mundur dapat dikustomisasi.
--**🔔 Auto Bel Elektrik**: Menyediakan hingga 15 slot jadwal bel elektrik.Bisa diatur waktu berbunyi, jumlah dering, dan durasi per dering.
--**💻 Web Dashboard (Dark Mode)**: Antarmuka web yang modern, responsif, dan mendukung *tabbing* (Tab Tarhim & Tab Bel) untuk kemudahan manajemen.
--**📱 Remote Manual**: Tombol *bypass* di web UI untuk menyalakan/mematikan Ampli secara manual, serta tombol "Tahan" untuk membunyikan Bel secara manual dengan fitur *Failsafe* (anti-hang).
+- **📡 Sinkronisasi Waktu & Jadwal Otomatis**: Mendapatkan waktu via NTP Server dan jadwal salat harian dari API MyQuran.
+- **📻 Auto Tarhim**: Mengaktifkan relay amplifier dan memutar audio dari SD Card secara otomatis sebelum adzan.Pilihan file MP3 dan durasi hitung mundur dapat dikustomisasi.
+- **🔔 Auto Bel Elektrik**: Menyediakan hingga 15 slot jadwal bel elektrik.Bisa diatur waktu berbunyi, jumlah dering, dan durasi per dering.
+- **💻 Web Dashboard (Dark Mode)**: Antarmuka web yang modern, responsif, dan mendukung *tabbing* (Tab Tarhim & Tab Bel) untuk kemudahan manajemen.
+- **📱 Remote Manual**: Tombol *bypass* di web UI untuk menyalakan/mematikan Ampli secara manual, serta tombol "Tahan" untuk membunyikan Bel secara manual dengan fitur *Failsafe* (anti-hang).
 - **📺 LCD 16x2 dengan 3 Mode**: Tombol fisik untuk mengganti tampilan layar LCD: 
   -Mode 0: Jam & Hitung Mundur Tarhim.
   -Mode 1: Jam & Hitung Mundur Bel Selanjutnya.
@@ -46,11 +46,11 @@ Berikut adalah pemetaan pin berdasarkan kode program:
 
 ## 📚 Library yang Dibutuhkan
 Pastikan Anda telah menginstal pustaka (*library*) berikut melalui **Arduino Library Manager** sebelum melakukan kompilasi:
--`ESP8266WiFi`, `ESP8266WebServer`, `ESP8266HTTPClient` (Bawaan core ESP8266).
--`NTPClient` (oleh Fabrice Weinberg).
--`LiquidCrystal_I2C` (oleh Frank de Brabander).
--`DFRobotDFPlayerMini` (oleh DFRobot).
--`ArduinoJson` (oleh Benoit Blanchon - **Gunakan Versi 6.x**).
+- `ESP8266WiFi`, `ESP8266WebServer`, `ESP8266HTTPClient` (Bawaan core ESP8266).
+- `NTPClient` (oleh Fabrice Weinberg).
+- `LiquidCrystal_I2C` (oleh Frank de Brabander).
+- `DFRobotDFPlayerMini` (oleh DFRobot).
+- `ArduinoJson` (oleh Benoit Blanchon - **Gunakan Versi 6.x**).
 
 ## 🚀 Cara Instalasi
 
