@@ -61,4 +61,7 @@ Pastikan Anda telah menginstal pustaka (*library*) berikut melalui **Arduino Lib
    const char* ssid     = "NAMA_WIFI_ANDA";
    const char* password = "PASSWORD_WIFI_ANDA";
 4. isi file audio pada kartu memory , masukan file audio di dalam folder **mp3** dan penaaan fila audio dengan format 0001.mp3 dst
-5. struktur folder seperti ini ![Skema Rangkaian](file.png)
+5. struktur folder seperti ini ![Struktur Folder](file.png)
+
+## Skema Rangkaian
+ - Gambar Diagram Wiring Auto Tarhim dan Bel ![Skema Rangkaian](Diagram Auto Tarhim Esp By Muhsin-It.png)
