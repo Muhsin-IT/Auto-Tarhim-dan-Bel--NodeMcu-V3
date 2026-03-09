@@ -11,8 +11,8 @@
 #include <LittleFS.h>
 
 // --- KONFIGURASI WIFI ---
-const char* ssid     = "Kantor Pusat✋😎🤚";
-const char* password = "kantorpusat1973";
+const char* ssid     = "Nama Wifi";
+const char* password = "Pasword Wifi";
 
 // --- KONFIGURASI PIN ---
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -59,7 +59,7 @@ bool belRelayState = false;
 // --- VARIABEL KONTROL MANUAL (REMOTE UI) ---
 bool manualAmpli = false;
 bool manualBel = false;
-unsigned long lastBelPing = 0; // Untuk proteksi Failsafe
+unsigned long lastBelPing = 0;
 
 void saveConfig() {
   File f = LittleFS.open("/config.json", "w");
@@ -633,7 +633,7 @@ void loop() {
     lcd.print(" | Bel   ");
 
     lcd.setCursor(0, 1);
-    if (isBelRinging || manualBel) { // LCD akan bilang bunyi saat ditekan manual
+    if (isBelRinging || manualBel) {
       lcd.print(" BEL BERBUNYI.. ");
     } else {
       if (nextBelTime != "--:--") {
@@ -690,7 +690,7 @@ void loop() {
     }
 
     lcd.setCursor(0, 0);
-    lcd.print(jamSkrgStr); // Hapus detik (Opsi ke-2 yang lebih rapi)
+    lcd.print(jamSkrgStr); 
     lcd.print(" | ");
     lcd.print(nextLbl);
     for (int i = 0; i < (7 - nextLbl.length()); i++) lcd.print(" ");
